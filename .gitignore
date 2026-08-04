@@ -1,0 +1,62 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# --- Gerçek AdMob kimlikleri (depoya asla girmemeli) ---
+# Kimlik herkese açık olursa başkası sahte bir uygulamada kullanıp hesaba
+# geçersiz trafik yazdırabilir. Örnek şablon commit'li.
+android/admob.properties
+android/key.properties
+**/*.jks
+**/*.keystore
+tool/build_release.sh
+android/build/
+
+# --- Oyunun çekirdek mantığı (bilerek paylaşılmıyor) ---
+# Bu dosyalar olmadan proje derlenmez; depo yalnızca arayüzü ve iskeleti
+# gösteriyor. Ayrıntı için README'ye bak.
+lib/game/merge_board.dart
+test/merge_board_test.dart
+NOTES.md

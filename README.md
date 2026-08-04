@@ -1,0 +1,113 @@
+# Merge Game
+
+Flutter + Flame ile yapılmış birleştirme oyunu. 5x5 tahtada aynı seviyeden
+objeleri birleştirip daha yükseğine çıkıyorsun.
+
+## Nasıl oynanır
+
+- **Boş bir kareye dokun** → sıradaki obje oraya gelir. Ne geleceğini üstteki
+  kutuda görürsün.
+- **Aynı seviyeden iki obje yan yana gelirse** birleşip bir üst seviyeye
+  çıkar. Çapraz komşuluk saymaz.
+- **Bir objeyi sürükleyip komşu kareye taşıyabilirsin**; aynı seviyedekileri
+  böyle buluşturuyorsun.
+- Birleşme yeni bir komşuluk doğurursa zincir kendiliğinden devam eder ve
+  puan katlanır.
+- **Tahta dolar ve birleşecek komşu kalmazsa oyun biter.**
+
+## Ekranlar
+
+- **Menü** — Devam Et (yalnızca kayıtlı oyun varsa), Yeni Oyun, Nasıl Oynanır,
+  Çıkış. Rekor menüde rozet olarak duruyor.
+- **Oyun** — üstte puan, en yüksek seviye, sıradaki obje ve rekor; sağ üstte
+  bilgi ve menü düğmeleri.
+- **Oyun sonu** — "OYUN BİTTİ / hamle kalmadı", puan, ulaşılan seviye, rekor
+  kutlaması; reklam izleyip devam etme, tekrar oyna, menü.
+
+## Yardımcı davranışlar
+
+- **Nasıl oynanır** balonu bilgi düğmesinden açılıyor, bir süre sonra
+  kendiliğinden kapanıyor, tekrar açılabiliyor.
+- **Boşta ipucu:** bir süre hamle yapılmazsa önerilen hamlenin kareleri yanıp
+  sönüyor. Sarı halka "bunu şuraya sürükle", mavi halka "buraya dokun" demek.
+- **Kayıt:** her hamleden sonra tahta cihaza yazılıyor; menüdeki Devam Et
+  kaldığın yerden açıyor. Oyun bitince kayıt siliniyor.
+- **Reklamla devam:** hamle kalmayınca ödüllü reklam izleyip tahtada yer
+  açabiliyorsun, tur başına bir kez.
+
+## Görsel
+
+Hiç asset yok, her şey kodla çiziliyor. Seviye arttıkça hem renk hem kenar
+sayısı değişiyor (üçgen → kare → beşgen → … → daire), böylece renk körlüğü
+olan oyuncular da seviyeleri ayırt edebiliyor. Uygulama ikonu da aynı şekilde
+kodla üretiliyor.
+
+## Depoda olanlar
+
+| Dosya | Sorumluluk |
+|---|---|
+| `lib/main.dart` | Uygulama girişi, paylaşılan servislerin kurulumu |
+| `lib/ui/menu_screen.dart` | Ana menü, rekor rozeti, hareketli arka plan |
+| `lib/ui/game_page.dart` | `GameWidget` ve katmanların bağlanması |
+| `lib/ui/hud_overlay.dart` | Puan, en yüksek seviye, sıradaki obje, düğmeler |
+| `lib/ui/game_over_overlay.dart` | Oyun sonu kartı, reklamla devam |
+| `lib/ui/how_to_play.dart` | Nasıl oynanır balonu ve bilgi düğmesi |
+| `lib/game/merge_game.dart` | Flame tarafı: kamera, hücre koordinatı, dokunuş ve sürükleme |
+| `lib/game/tile_component.dart` | Tek bir objenin çizimi |
+| `lib/game/level_style.dart` | Seviye başına renk ve şekil |
+| `lib/game/game_save_store.dart` | Yarım kalan oyunun kaydı |
+| `lib/game/high_score_store.dart` | Rekorun saklanması |
+| `lib/game/ads_controller.dart` | Ödüllü reklam yükleme ve gösterme |
+| `lib/game/ad_config.dart` | Test/gerçek reklam kimliği seçimi |
+| `tool/gen_icon.py` | Uygulama ikonunu kodla üreten betik |
+
+## Depoda olmayanlar
+
+Aşağıdaki dosyalar `.gitignore` ile hariç tutuldu:
+
+- `lib/game/merge_board.dart` — birleşme, zincir, puanlama, ipucu bulma ve
+  oyun sonu kuralları
+- `test/merge_board_test.dart` — yukarıdaki kuralların testleri
+
+Bu yüzden `flutter run` ve `flutter test` bu depo tek başına klonlandığında
+çalışmaz. Depo arayüzü, proje yapısını ve iskeleti gösteriyor.
+
+## Reklamlar
+
+Ödüllü reklam için `google_mobile_ads` kullanılıyor. **Depoda hiçbir gerçek
+AdMob kimliği yok**; kaynakta yalnızca Google'ın test birimleri var. Gerçek
+değerleri koymak için:
+
+| Kimlik | Nereden | Şablon |
+|---|---|---|
+| Uygulama kimliği (`~`) | `android/admob.properties` | `admob.properties.example` |
+| Ödüllü birim (`/`) | derlemedeki `--dart-define=ADMOB_REWARDED_ANDROID=…` | `tool/build_release.example.sh` |
+
+`flutter run` ile geliştirirken her zaman test reklamı çıkıyor; gerçek kimlik
+verilmiş olsa bile. Kendi gerçek reklamına tıklamak geçersiz trafik sayılır ve
+AdMob hesabının kapatılmasına yol açar.
+
+## Yayın hazırlığı
+
+- **İkon:** `python3 tool/gen_icon.py` — hiç dış kütüphane yok, PNG `zlib` ve
+  `struct` ile elle yazılıyor. Beş yoğunluk, uyarlanabilir ikonun ön katmanı
+  ve mağaza için 512x512.
+- **Açılış ekranı:** oyunun koyu zemin rengi; varsayılan beyaz parlama yok.
+- **İmza:** `android/key.properties` içindeki keystore ile. Dosya yoksa
+  release debug anahtarlarına düşüyor (o paket Play'e yüklenemez).
+- **Küçültme:** release'te R8 açık.
+
+Yayın paketi:
+
+```bash
+./tool/build_release.sh          # app bundle
+./tool/build_release.sh apk      # apk
+```
+
+`store/DATA_SAFETY.md` Play Console'daki Data Safety formunun cevaplarını,
+`PRIVACY_POLICY.md` gizlilik politikasını içeriyor.
+
+### Depoya girmeyen gizli dosyalar
+
+`android/admob.properties`, `android/key.properties` ve `tool/build_release.sh`
+gerçek kimlik ve anahtar taşıdığı için `.gitignore`'da.

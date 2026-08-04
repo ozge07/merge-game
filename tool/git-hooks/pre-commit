@@ -1,0 +1,86 @@
+#!/bin/bash
+# Gerçek AdMob kimliklerinin ve gizli bilgilerin commit edilmesini engeller.
+#
+# Depo public olduğu için gerçek reklam birimi kimliği herkese açık olmamalı:
+# başkası onu sahte bir uygulamada kullanıp hesaba geçersiz trafik
+# yazdırabilir ve AdMob hesabı kapatılabilir.
+#
+# Kurmak için bir kez:  git config core.hooksPath tool/git-hooks
+# Bilerek geçmek için:  git commit --no-verify
+
+set -uo pipefail
+
+engellendi=0
+
+hata() {
+  printf '\033[31m✗ %s\033[0m\n' "$1" >&2
+  engellendi=1
+}
+
+dosyalar=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$dosyalar" ] && exit 0
+
+# Google'ın herkese açık test yayıncı kimliği; bu serbest.
+TEST_PUB="ca-app-pub-3940256099942544"
+
+# --- 1) Dosya adına göre yasaklılar --------------------------------------
+yasak_ad='(\.jks|\.keystore|\.p12|\.pfx|\.pem|\.mobileprovision)$|(^|/)(key\.properties|admob\.properties|build_release\.sh|google-services\.json|GoogleService-Info\.plist|id_rsa)$|(^|/)\.env'
+
+while IFS= read -r dosya; do
+  if printf '%s' "$dosya" | grep -qE "$yasak_ad"; then
+    hata "Bu dosya commit edilemez: $dosya"
+  fi
+done <<< "$dosyalar"
+
+# --- 2) İçerikte gerçek AdMob kimliği ------------------------------------
+while IFS= read -r dosya; do
+  [ "$dosya" = "tool/git-hooks/pre-commit" ] && continue
+  git show ":$dosya" 2>/dev/null | grep -qI . || continue
+
+  # ca-app-pub-... biçimindeki, test yayıncısına ait OLMAYAN her kimlik.
+  eslesme=$(
+    git show ":$dosya" 2>/dev/null |
+      grep -nEo 'ca-app-pub-[0-9]{16}[~/][0-9]+' |
+      grep -v "$TEST_PUB" | head -1
+  )
+  if [ -n "$eslesme" ]; then
+    hata "Gerçek AdMob kimliği → $dosya (satır ${eslesme%%:*})"
+  fi
+done <<< "$dosyalar"
+
+# --- 3) Diğer gizli bilgi desenleri ---------------------------------------
+gizli_desen='BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY|(storePassword|keyPassword)[[:space:]]*=[[:space:]]*[^[:space:]]|AIza[0-9A-Za-z_-]{35}|gh[pousr]_[0-9A-Za-z]{36}|AKIA[0-9A-Z]{16}'
+
+while IFS= read -r dosya; do
+  [ "$dosya" = "tool/git-hooks/pre-commit" ] && continue
+  git show ":$dosya" 2>/dev/null | grep -qI . || continue
+
+  # Değeri bir dosyadan okuyan satırlar (ör. keystoreProperties.getProperty)
+  # gizli bilgi değil, yalnızca ona giden yol. Bunları eliyoruz.
+  eslesme=$(
+    git show ":$dosya" 2>/dev/null |
+      grep -vE 'getProperty\(|System\.getenv|fromEnvironment' |
+      grep -nEo "$gizli_desen" | head -1
+  )
+  if [ -n "$eslesme" ]; then
+    hata "Gizli bilgi olabilir → $dosya (satır ${eslesme%%:*})"
+  fi
+done <<< "$dosyalar"
+
+if [ "$engellendi" -ne 0 ]; then
+  cat >&2 <<'MESAJ'
+
+Commit durduruldu. Bu depo PUBLIC — bir kez push edilirse geri almak zor,
+kopyaları kalabilir.
+
+Yapılacaklar:
+  • Dosyayı sahneden çıkar:  git restore --staged <dosya>
+  • Gerçek kimlikleri android/admob.properties ve tool/build_release.sh
+    içinde tut; ikisi de .gitignore'da
+  • Yanlış alarma eminsen:   git commit --no-verify
+
+MESAJ
+  exit 1
+fi
+
+exit 0
