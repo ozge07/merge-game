@@ -4,11 +4,14 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merge_game/game/ads_controller.dart';
+import 'package:merge_game/game/audio_controller.dart';
 import 'package:merge_game/game/game_save_store.dart';
 import 'package:merge_game/game/high_score_store.dart';
 import 'package:merge_game/game/merge_board.dart';
 import 'package:merge_game/game/merge_game.dart';
+import 'package:merge_game/game/popup_text.dart';
 import 'package:merge_game/ui/game_page.dart';
+import 'package:merge_game/i18n/app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Oyunu gerçek `GameWidget` içinde kurar; Flame'in bütün yaşam döngüsü
@@ -27,6 +30,7 @@ Future<MergeGame> pumpGame(WidgetTester tester) async {
         saves: saves,
         highScores: highScores,
         ads: AdsController.disabled(),
+        audio: AudioController(),
         game: game,
       ),
     ),
@@ -52,7 +56,12 @@ Future<void> settle(WidgetTester tester) async {
 void main() {
   // Depolama eklentisi test ortamında gerçek değil; sahte değerlerle
   // beslemezsek çağrılar askıda kalıp testleri yavaşlatıyor.
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    // Testler Türkçe metinlere bakıyor; cihaz dilinden bağımsız olsun.
+    LanguageStore.debugOverride = AppLanguage.tr;
+  });
+  tearDown(() => LanguageStore.debugOverride = null);
 
   testWidgets('oyun açılıyor ve tahta boş başlıyor', (tester) async {
     final game = await pumpGame(tester);
@@ -339,6 +348,7 @@ void main() {
           saves: saves,
           highScores: HighScoreStore(),
           ads: AdsController.disabled(),
+        audio: AudioController(),
           game: ikinci,
           resume: true,
         ),
@@ -358,5 +368,54 @@ void main() {
     }
 
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  group('ses ve tebrik', () {
+    testWidgets('HUD ses düğmesi sesi kapatıp açıyor', (tester) async {
+      final game = await pumpGame(tester);
+      expect(game.audio.muted.value, isFalse);
+
+      await tester.tap(find.byIcon(Icons.volume_up));
+      await tester.pump();
+
+      expect(game.audio.muted.value, isTrue);
+      expect(find.byIcon(Icons.volume_off), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('yüksek seviye birleşmesi ekrana tebrik yazıyor', (
+      tester,
+    ) async {
+      final game = await pumpGame(tester);
+      // Tebrik metinlerini elle bağlıyoruz; normalde arayüz veriyor.
+      game.mergePraiseText = (level) => level >= 5 ? 'TEBRIK$level' : null;
+
+      // Yan yana iki seviye 5 objesi: birleşince 6 olur ve tebrik çıkar.
+      game.board.debugSet(0, 0, 5);
+      game.board.debugSet(1, 1, 5);
+      game.dropTile(1, 1, 0, 1);
+      await settle(tester);
+
+      final yazilar = game.world.children.whereType<PopupText>().toList();
+      expect(yazilar, isNotEmpty, reason: 'tebrik yazısı eklenmeli');
+      expect(yazilar.first.text, 'TEBRIK6');
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('düşük seviye birleşmesinde tebrik çıkmıyor', (tester) async {
+      final game = await pumpGame(tester);
+      game.mergePraiseText = (level) => level >= 5 ? 'TEBRIK$level' : null;
+
+      game.board.debugSet(0, 0, 1);
+      game.board.debugSet(1, 1, 1);
+      game.dropTile(1, 1, 0, 1);
+      await settle(tester);
+
+      expect(game.world.children.whereType<PopupText>(), isEmpty);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
   });
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../game/merge_game.dart';
+import '../i18n/strings.dart';
 
 /// "Nasıl oynanır" balonu.
 ///
@@ -44,6 +45,8 @@ class _HowToPlayTipState extends State<HowToPlayTip>
 
   @override
   Widget build(BuildContext context) {
+    final metin = Strings.of(context);
+
     return Positioned.fill(
       child: GestureDetector(
         // Balonun dışına dokununca da kapansın.
@@ -82,7 +85,7 @@ class _HowToPlayTipState extends State<HowToPlayTip>
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              'NASIL OYNANIR',
+                              metin.howToTitle,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900,
@@ -93,45 +96,34 @@ class _HowToPlayTipState extends State<HowToPlayTip>
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const _Rule(
+                        _Rule(
                           icon: Icons.touch_app_rounded,
-                          text:
-                              'Boş bir kareye dokun, sıradaki obje oraya '
-                              'gelir. Ne geleceğini üstteki kutuda görürsün.',
+                          text: metin.ruleTap,
                         ),
-                        const _Rule(
+                        _Rule(
                           icon: Icons.join_full_rounded,
-                          text:
-                              'Aynı seviyeden iki obje yan yana gelirse '
-                              'birleşip bir üst seviyeye çıkar. Çapraz '
-                              'komşuluk saymaz.',
+                          text: metin.ruleMerge,
                         ),
-                        const _Rule(
+                        _Rule(
                           icon: Icons.drag_indicator_rounded,
-                          text:
-                              'Bir objeyi sürükleyip komşu kareye taşıyabilir, '
-                              'böylece aynı seviyedekileri buluşturabilirsin.',
+                          text: metin.ruleDrag,
                         ),
-                        const _Rule(
+                        _Rule(
                           icon: Icons.bolt_rounded,
-                          text:
-                              'Birleşme yeni bir komşuluk doğurursa zincir '
-                              'devam eder ve puan katlanır.',
+                          text: metin.ruleChain,
                         ),
-                        const _Rule(
+                        _Rule(
                           icon: Icons.dangerous_rounded,
-                          text:
-                              'Tahta dolar ve birleşecek komşu kalmazsa oyun '
-                              'biter.',
+                          text: metin.ruleGameOver,
                         ),
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: widget.onClose,
-                            child: const Text(
-                              'ANLADIM',
-                              style: TextStyle(
+                            child: Text(
+                              metin.gotIt,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 1.5,
                                 color: Color(0xFF7FDBFF),
@@ -212,9 +204,10 @@ class InfoButton extends StatelessWidget {
 
 /// Sıradaki objeyi gösteren küçük satır; hem HUD hem menü kullanıyor.
 class NextUpRow extends StatelessWidget {
-  const NextUpRow({required this.level, super.key});
+  const NextUpRow({required this.level, required this.label, super.key});
 
   final int level;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +215,7 @@ class NextUpRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'SIRADAKİ',
+          label,
           style: TextStyle(
             fontSize: 11,
             letterSpacing: 2,

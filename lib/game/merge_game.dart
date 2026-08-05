@@ -7,10 +7,12 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
+import 'audio_controller.dart';
 import 'game_save_store.dart';
 import 'high_score_store.dart';
 import 'level_style.dart';
 import 'merge_board.dart';
+import 'popup_text.dart';
 import 'tile_component.dart';
 
 /// Birleştirme oyununun Flame tarafı.
@@ -22,10 +24,12 @@ class MergeGame extends FlameGame {
     Random? random,
     GameSaveStore? saves,
     HighScoreStore? highScores,
+    AudioController? audio,
     this.resumeOnLoad = false,
   }) : board = MergeBoard(random: random),
        saves = saves ?? GameSaveStore(),
-       highScores = highScores ?? HighScoreStore();
+       highScores = highScores ?? HighScoreStore(),
+       audio = audio ?? AudioController();
 
   /// Açılışta kayıtlı oyundan mı devam edilecek?
   ///
@@ -46,6 +50,7 @@ class MergeGame extends FlameGame {
   final MergeBoard board;
   final GameSaveStore saves;
   final HighScoreStore highScores;
+  final AudioController audio;
 
   final BoardComponent _boardComponent = BoardComponent();
 
@@ -59,6 +64,13 @@ class MergeGame extends FlameGame {
 
   /// Bu turda rekor kırıldı mı? Oyun sonu kartı buna göre kutluyor.
   final ValueNotifier<bool> beatRecord = ValueNotifier<bool>(false);
+
+  /// Tebrik metinlerini üreten geri çağrı; arayüz dil değişince güncelliyor.
+  ///
+  /// Oyun sınıfı widget ağacına bağlı olmadığı için `BuildContext`
+  /// kullanamıyor; metinleri dışarıdan alıyor.
+  String? Function(int level) mergePraiseText = (_) => null;
+  String Function(int chain) chainPraiseText = (chain) => '$chain';
 
   /// Yanıp sönen öneri; oyuncu hamle yapınca sıfırlanıyor.
   MergeHint? activeHint;
@@ -193,8 +205,10 @@ class MergeGame extends FlameGame {
     if (result == null) {
       return;
     }
+    audio.place();
     _boardComponent.spawnTile(row, col, spawned);
     _boardComponent.applyResult(result);
+    _celebrate(result);
     _afterMove();
   }
 
@@ -207,10 +221,13 @@ class MergeGame extends FlameGame {
     }
     final result = board.moveTile(fromRow, fromCol, toRow, toCol);
     if (result == null) {
+      audio.invalid();
       return false;
     }
+    audio.drop();
     _boardComponent.moveTile(fromRow, fromCol, toRow, toCol);
     _boardComponent.applyResult(result);
+    _celebrate(result);
     _afterMove();
     return true;
   }
@@ -227,6 +244,78 @@ class MergeGame extends FlameGame {
     _clearHint();
     _publish();
     unawaited(saves.write(board.toJson()));
+  }
+
+  /// Birleşme sonrası ses ve tebrik.
+  ///
+  /// Ses seviyeyle tizleşiyor; belirli bir seviyeden sonra ayrıca ekranda
+  /// kutlama yazısı çıkıyor. Zincir kurulduğunda ayrı bir mesaj veriliyor.
+  void _celebrate(MergeResult result) {
+    if (!result.didMerge) {
+      return;
+    }
+    final level = result.finalLevel;
+    if (level == null) {
+      return;
+    }
+
+    audio.merge(level);
+
+    // Zincir kendi başına dikkat çekici; ayrı sesi ve mesajı var.
+    if (result.chain >= 2) {
+      audio.chain();
+      _showPopup(
+        chainPraiseText(result.chain),
+        result.row,
+        result.col,
+        const Color(0xFFFFD54F),
+        size: 26,
+      );
+      return;
+    }
+
+    final praise = mergePraiseText(level);
+    if (praise == null) {
+      return;
+    }
+    // Seviye yükseldikçe kutlama da büyüyor.
+    if (level >= 9) {
+      audio.fanfare();
+    } else {
+      audio.praise();
+    }
+    _showPopup(
+      praise,
+      result.row,
+      result.col,
+      LevelStyle.colorOf(level),
+      size: level >= 9 ? 34 : 28,
+    );
+  }
+
+  void _showPopup(
+    String text,
+    int row,
+    int col,
+    Color colour, {
+    required double size,
+  }) {
+    final centre = centreOf(row, col);
+    world.add(
+      PopupText(
+        text: text,
+        style: TextStyle(
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+          color: colour,
+          shadows: const [Shadow(blurRadius: 12, color: Colors.black87)],
+        ),
+        // Tahtanın üstünde, objeyi kapatmayacak kadar yukarıda.
+        position: Vector2(worldWidth / 2, centre.y - cellSide * 0.9),
+        popIn: true,
+      ),
+    );
   }
 
   void _afterMove() {
@@ -247,6 +336,7 @@ class MergeGame extends FlameGame {
 
   void _finish() {
     isOver.value = true;
+    audio.gameOver();
     // Biten oyunun kaydı kalmasın; menüde "devam et" çıkmamalı.
     unawaited(saves.clear());
     unawaited(

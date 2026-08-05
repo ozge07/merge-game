@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../game/ads_controller.dart';
 import '../game/merge_game.dart';
+import '../i18n/strings.dart';
 
 /// Hamle kalmayınca çıkan kart: skor, ulaşılan seviye, reklamla devam,
 /// tekrar oyna ve menüye dönüş.
@@ -57,6 +58,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final metin = Strings.of(context);
     final fade = CurvedAnimation(
       parent: _enter,
       curve: const Interval(0, 0.45, curve: Curves.easeOut),
@@ -86,7 +88,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'OYUN BİTTİ',
+                      metin.gameOver,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -96,7 +98,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'hamle kalmadı',
+                      metin.noMovesLeft,
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.45),
@@ -118,7 +120,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                       ),
                     ),
                     Text(
-                      'puan',
+                      metin.points,
                       style: TextStyle(
                         fontSize: 12,
                         letterSpacing: 2,
@@ -130,7 +132,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'En yüksek seviye ',
+                          metin.highestLevel,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withValues(alpha: 0.6),
@@ -142,11 +144,11 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                     ValueListenableBuilder<bool>(
                       valueListenable: game.beatRecord,
                       builder: (context, beaten, _) => beaten
-                          ? const Padding(
-                              padding: EdgeInsets.only(top: 14),
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 14),
                               child: Text(
-                                '🏆  YENİ REKOR!',
-                                style: TextStyle(
+                                metin.newRecord,
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1.5,
@@ -169,9 +171,9 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                           children: [
                             _CardButton(
                               label: _watching
-                                  ? 'REKLAM AÇILIYOR…'
-                                  : 'DEVAM ET',
-                              subtitle: 'reklam izle, tahtada yer aç',
+                                  ? metin.watchingAd
+                                  : metin.continueGame,
+                              subtitle: metin.continueSubtitle,
                               icon: Icons.play_circle_fill_rounded,
                               accent: const Color(0xFF66BB6A),
                               onPressed: _watching ? null : _watchAdToContinue,
@@ -182,13 +184,13 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                       },
                     ),
                     _CardButton(
-                      label: 'TEKRAR OYNA',
+                      label: metin.playAgain,
                       icon: Icons.refresh_rounded,
                       onPressed: game.startNew,
                     ),
                     const SizedBox(height: 12),
                     _CardButton(
-                      label: 'MENÜ',
+                      label: metin.menu,
                       icon: Icons.home_rounded,
                       filled: false,
                       onPressed: widget.onExitToMenu,

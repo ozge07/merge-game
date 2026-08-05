@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../game/merge_game.dart';
+import '../i18n/strings.dart';
 import 'how_to_play.dart';
 
 /// Ekranın üstündeki skor, rekor, sıradaki obje ve düğmeler.
@@ -18,6 +19,8 @@ class HudOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metin = Strings.of(context);
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -31,7 +34,7 @@ class HudOverlay extends StatelessWidget {
                   child: ValueListenableBuilder<int>(
                     valueListenable: game.score,
                     builder: (context, score, _) =>
-                        _Stat(label: 'PUAN', value: '$score'),
+                        _Stat(label: metin.score, value: '$score'),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -39,17 +42,26 @@ class HudOverlay extends StatelessWidget {
                   child: ValueListenableBuilder<int>(
                     valueListenable: game.highestLevel,
                     builder: (context, level, _) =>
-                        _Stat(label: 'EN YÜKSEK', value: '$level'),
+                        _Stat(label: metin.highest, value: '$level'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Column(
                   children: [
+                    ValueListenableBuilder<bool>(
+                      valueListenable: game.audio.muted,
+                      builder: (context, muted, _) => _RoundButton(
+                        icon: muted ? Icons.volume_off : Icons.volume_up,
+                        tooltip: muted ? metin.soundOn : metin.soundOff,
+                        onPressed: game.audio.toggleMute,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     InfoButton(onPressed: onInfo),
                     const SizedBox(height: 8),
                     _RoundButton(
                       icon: Icons.home_rounded,
-                      tooltip: 'Menüye dön',
+                      tooltip: metin.backToMenu,
                       onPressed: onMenu,
                     ),
                   ],
@@ -59,7 +71,8 @@ class HudOverlay extends StatelessWidget {
             const SizedBox(height: 10),
             ValueListenableBuilder<int>(
               valueListenable: game.nextLevel,
-              builder: (context, level, _) => NextUpRow(level: level),
+              builder: (context, level, _) =>
+                  NextUpRow(level: level, label: metin.nextUp),
             ),
             const SizedBox(height: 6),
             ValueListenableBuilder<int>(
@@ -76,7 +89,7 @@ class HudOverlay extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'rekor $best',
+                          metin.recordSmall(best),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.white.withValues(alpha: 0.45),

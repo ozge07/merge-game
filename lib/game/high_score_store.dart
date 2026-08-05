@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../app_log.dart';
+
 /// En yüksek puanı cihazda saklar.
 class HighScoreStore {
   static const String _key = 'merge_high_score';
@@ -16,7 +18,7 @@ class HighScoreStore {
       final prefs = await SharedPreferences.getInstance().timeout(_timeout);
       best.value = prefs.getInt(_key) ?? 0;
     } catch (error) {
-      debugPrint('Rekor okunamadı: $error');
+      AppLog.warn('score', 'rekor okunamadı', error);
     }
   }
 
@@ -30,7 +32,7 @@ class HighScoreStore {
       final prefs = await SharedPreferences.getInstance().timeout(_timeout);
       await prefs.setInt(_key, score).timeout(_timeout);
     } catch (error) {
-      debugPrint('Rekor kaydedilemedi: $error');
+      AppLog.warn('score', 'rekor kaydedilemedi', error);
     }
     return true;
   }

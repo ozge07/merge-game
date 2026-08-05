@@ -4,9 +4,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../game/ads_controller.dart';
+import '../game/audio_controller.dart';
 import '../game/game_save_store.dart';
 import '../game/high_score_store.dart';
 import '../game/merge_game.dart';
+import '../i18n/strings.dart';
 import 'game_over_overlay.dart';
 import 'how_to_play.dart';
 import 'hud_overlay.dart';
@@ -16,6 +18,7 @@ class GamePage extends StatefulWidget {
   const GamePage({
     required this.saves,
     required this.highScores,
+    required this.audio,
     required this.ads,
     this.resume = false,
     this.game,
@@ -24,6 +27,7 @@ class GamePage extends StatefulWidget {
 
   final GameSaveStore saves;
   final HighScoreStore highScores;
+  final AudioController audio;
   final AdsController ads;
 
   /// `true` ise kayıtlı oyundan devam edilir.
@@ -42,6 +46,7 @@ class _GamePageState extends State<GamePage> {
       MergeGame(
         saves: widget.saves,
         highScores: widget.highScores,
+        audio: widget.audio,
         resumeOnLoad: widget.resume,
       );
 
@@ -72,6 +77,15 @@ class _GamePageState extends State<GamePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Tebrik metinleri Flame tarafında çiziliyor; dil değişince güncelliyoruz.
+    final metin = Strings.of(context);
+    _game.mergePraiseText = metin.mergePraise;
+    _game.chainPraiseText = metin.chainPraise;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF12161F),
@@ -82,10 +96,13 @@ class _GamePageState extends State<GamePage> {
               game: _game,
               loadingBuilder: (context) => const SizedBox.shrink(),
               overlayBuilderMap: {
-                'hud': (context, game) => HudOverlay(
+                // Katman oyun tuvalinden bağımsız rasterlensin.
+                'hud': (context, game) => RepaintBoundary(
+                  child: HudOverlay(
                   game: game,
                   onInfo: () => setState(() => _showHowTo = true),
-                  onMenu: () => Navigator.of(context).maybePop(),
+                    onMenu: () => Navigator.of(context).maybePop(),
+                  ),
                 ),
                 'gameOver': (context, game) => GameOverOverlay(
                   game: game,

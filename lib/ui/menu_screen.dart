@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../game/ads_controller.dart';
+import '../game/audio_controller.dart';
 import '../game/game_save_store.dart';
 import '../game/high_score_store.dart';
 import '../game/level_style.dart';
+import '../i18n/strings.dart';
 import 'game_page.dart';
 import 'how_to_play.dart';
 
@@ -16,12 +18,14 @@ class MenuScreen extends StatefulWidget {
   const MenuScreen({
     required this.saves,
     required this.highScores,
+    required this.audio,
     required this.ads,
     super.key,
   });
 
   final GameSaveStore saves;
   final HighScoreStore highScores;
+  final AudioController audio;
   final AdsController ads;
 
   @override
@@ -50,10 +54,12 @@ class _MenuScreenState extends State<MenuScreen>
   }
 
   Future<void> _play({required bool resume}) async {
+    widget.audio.button();
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => GamePage(
           saves: widget.saves,
+          audio: widget.audio,
           highScores: widget.highScores,
           ads: widget.ads,
           resume: resume,
@@ -72,9 +78,46 @@ class _MenuScreenState extends State<MenuScreen>
     SystemNavigator.pop();
   }
 
+  /// Son geri tuşuna basılma anı. İki saniye içinde tekrar basılırsa çıkılıyor.
+  DateTime? _sonGeri;
+
+  /// Geri tuşu menüdeyken uygulamayı kapatıyor. Tek dokunuşla kapanmasını
+  /// istemiyoruz — oyuncu yanlışlıkla basınca oyundan atılmış oluyor.
+  void _geriTusu(bool didPop, Object? result) {
+    if (didPop) {
+      return;
+    }
+    final simdi = DateTime.now();
+    final onceki = _sonGeri;
+    if (onceki != null &&
+        simdi.difference(onceki) < const Duration(seconds: 2)) {
+      _quit();
+      return;
+    }
+    _sonGeri = simdi;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(Strings.of(context).pressBackAgain),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: _geriTusu,
+      child: _icerik(context),
+    );
+  }
+
+  Widget _icerik(BuildContext context) {
     final hasSave = widget.saves.hasSave;
+    final metin = Strings.of(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFF12161F),
@@ -94,9 +137,9 @@ class _MenuScreenState extends State<MenuScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(),
-                  const Text(
-                    'MERGE',
-                    style: TextStyle(
+                  Text(
+                    metin.titleTop,
+                    style: const TextStyle(
                       fontSize: 52,
                       height: 1,
                       fontWeight: FontWeight.w900,
@@ -104,9 +147,9 @@ class _MenuScreenState extends State<MenuScreen>
                       color: Colors.white,
                     ),
                   ),
-                  const Text(
-                    'GAME',
-                    style: TextStyle(
+                  Text(
+                    metin.titleBottom,
+                    style: const TextStyle(
                       fontSize: 52,
                       height: 1.05,
                       fontWeight: FontWeight.w900,
@@ -117,15 +160,18 @@ class _MenuScreenState extends State<MenuScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 22),
+                  const LanguageToggle(),
+                  const SizedBox(height: 18),
                   ValueListenableBuilder<int>(
                     valueListenable: widget.highScores.best,
-                    builder: (context, best, _) => _RecordBadge(best: best),
+                    builder: (context, best, _) =>
+                        _RecordBadge(best: best, metin: metin),
                   ),
                   const Spacer(),
                   if (hasSave) ...[
                     _MenuButton(
-                      label: 'DEVAM ET',
+                      label: metin.continueGame,
                       icon: Icons.play_circle_fill_rounded,
                       filled: true,
                       onPressed: () => _play(resume: true),
@@ -133,14 +179,14 @@ class _MenuScreenState extends State<MenuScreen>
                     const SizedBox(height: 12),
                   ],
                   _MenuButton(
-                    label: 'YENİ OYUN',
+                    label: metin.newGame,
                     icon: Icons.play_arrow_rounded,
                     filled: !hasSave,
                     onPressed: () => _play(resume: false),
                   ),
                   const SizedBox(height: 12),
                   _MenuButton(
-                    label: 'NASIL OYNANIR',
+                    label: metin.howToPlay,
                     icon: Icons.info_outline_rounded,
                     filled: false,
                     onPressed: () => setState(() => _showHowTo = true),
@@ -148,7 +194,7 @@ class _MenuScreenState extends State<MenuScreen>
                   if (Platform.isAndroid) ...[
                     const SizedBox(height: 12),
                     _MenuButton(
-                      label: 'ÇIKIŞ',
+                      label: metin.exit,
                       icon: Icons.close_rounded,
                       filled: false,
                       onPressed: _quit,
@@ -168,15 +214,16 @@ class _MenuScreenState extends State<MenuScreen>
 }
 
 class _RecordBadge extends StatelessWidget {
-  const _RecordBadge({required this.best});
+  const _RecordBadge({required this.best, required this.metin});
 
   final int best;
+  final Strings metin;
 
   @override
   Widget build(BuildContext context) {
     if (best == 0) {
       return Text(
-        'ilk oyununu oyna',
+        metin.playFirstGame,
         style: TextStyle(
           fontSize: 13,
           letterSpacing: 1,
@@ -201,7 +248,7 @@ class _RecordBadge extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            'REKOR  $best',
+            metin.record(best),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,

@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../app_log.dart';
 
 /// Yarım kalan oyunu cihazda saklar.
 ///
@@ -36,7 +37,7 @@ class GameSaveStore {
         _cached = decoded;
       }
     } catch (error) {
-      debugPrint('Kayıtlı oyun okunamadı: $error');
+      AppLog.warn('save', 'kayıtlı oyun okunamadı', error);
     }
   }
 
@@ -46,7 +47,7 @@ class GameSaveStore {
       final prefs = await SharedPreferences.getInstance().timeout(_timeout);
       await prefs.setString(_key, jsonEncode(state)).timeout(_timeout);
     } catch (error) {
-      debugPrint('Oyun kaydedilemedi: $error');
+      AppLog.warn('save', 'oyun kaydedilemedi', error);
     }
   }
 
@@ -56,7 +57,7 @@ class GameSaveStore {
       final prefs = await SharedPreferences.getInstance().timeout(_timeout);
       await prefs.remove(_key).timeout(_timeout);
     } catch (error) {
-      debugPrint('Kayıt silinemedi: $error');
+      AppLog.warn('save', 'kayıt silinemedi', error);
     }
   }
 }

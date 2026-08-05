@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../app_log.dart';
 import 'ad_config.dart';
 
 /// Ödüllü reklamları yönetir: oyuncu reklamı sonuna kadar izlerse bir can
@@ -65,7 +66,7 @@ class AdsController {
       unawaited(_load());
     } catch (error) {
       // `_initialised` false kalıyor; bir sonraki çağrı baştan deneyecek.
-      debugPrint('Reklam altyapısı başlatılamadı: $error');
+      AppLog.warn('ads', 'altyapı başlatılamadı', error);
     } finally {
       _initialising = false;
     }
@@ -94,7 +95,7 @@ class AdsController {
           _ad = null;
           isReady.value = false;
           _loading = false;
-          debugPrint('Ödüllü reklam yüklenemedi: $error');
+          AppLog.warn('ads', 'ödüllü reklam yüklenemedi', error);
           if (!completer.isCompleted) {
             completer.complete();
           }
@@ -129,7 +130,7 @@ class AdsController {
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        debugPrint('Reklam gösterilemedi: $error');
+        AppLog.warn('ads', 'reklam gösterilemedi', error);
         if (!closed.isCompleted) {
           closed.complete();
         }
