@@ -1,4 +1,4 @@
-package com.ozge.merge_game
+package com.bluelabsgames.mergegame
 
 import io.flutter.embedding.android.FlutterActivity
 

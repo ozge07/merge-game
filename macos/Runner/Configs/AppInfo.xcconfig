@@ -8,7 +8,7 @@
 PRODUCT_NAME = merge_game
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.ozge.mergeGame
+PRODUCT_BUNDLE_IDENTIFIER = com.bluelabsgames.mergeGame
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.ozge. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Blue Labs Games. All rights reserved.
