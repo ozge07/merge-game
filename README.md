@@ -74,18 +74,25 @@ Bu yüzden `flutter run` ve `flutter test` bu depo tek başına klonlandığınd
 
 ## Reklamlar
 
-Ödüllü reklam için `google_mobile_ads` kullanılıyor. **Depoda hiçbir gerçek
-AdMob kimliği yok**; kaynakta yalnızca Google'ın test birimleri var. Gerçek
-değerleri koymak için:
+Oyun sonunda ödüllü reklam izleyen oyuncu tahtada yer açıp devam edebiliyor.
+Tur başına bir kez.
 
-| Kimlik | Nereden | Şablon |
-|---|---|---|
-| Uygulama kimliği (`~`) | `android/admob.properties` | `admob.properties.example` |
-| Ödüllü birim (`/`) | derlemedeki `--dart-define=ADMOB_REWARDED_ANDROID=…` | `tool/build_release.example.sh` |
+**Geliştirirken reklam tamamen kapalı.** Yayın (release) dışı hiçbir
+derlemede reklam SDK'sı başlatılmıyor, ağa tek bir istek bile gitmiyor, test
+reklamı dahi açılmıyor. Kod düzeyinde kilit: üç ayrı noktada `kReleaseMode`
+kontrolü var ve `test/ads_controller_test.dart` bunları koruyor.
 
-`flutter run` ile geliştirirken her zaman test reklamı çıkıyor; gerçek kimlik
-verilmiş olsa bile. Kendi gerçek reklamına tıklamak geçersiz trafik sayılır ve
-AdMob hesabının kapatılmasına yol açar.
+Sebep somut: daha önce kullanılan AdMob hesabı geçersiz trafik nedeniyle
+kapatıldı. İkinci bir reddedilmeyi imkânsız kılmanın tek kesin yolu,
+geliştirme derlemesinin reklam ağıyla hiç konuşmaması.
+
+Sağlayıcı bağlı değilken ödül **doğrudan veriliyor**; özellik geliştirirken
+de çalışıyor.
+
+Reklam ağı Unity Ads. Oyun hangi ağın kullanıldığını bilmiyor — yalnızca
+`RewardedAdProvider` arayüzünü çağırıyor. Kimlik kaynak koda yazılmıyor,
+yayın derlemesinde `--dart-define` ile geçiliyor (`tool/build_release.sh`,
+`.gitignore`'da).
 
 ## Yayın hazırlığı
 
@@ -109,5 +116,5 @@ Yayın paketi:
 
 ### Depoya girmeyen gizli dosyalar
 
-`android/admob.properties`, `android/key.properties` ve `tool/build_release.sh`
+`android/key.properties` ve `tool/build_release.sh`
 gerçek kimlik ve anahtar taşıdığı için `.gitignore`'da.

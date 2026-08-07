@@ -11,8 +11,8 @@ Oyunun kendisi sizden hiçbir bilgi istemez ve hiçbir bilgi toplamaz. Hesap
 açmanız gerekmez, isim ya da e-posta sorulmaz. Oyunun içinde topladığımız
 hiçbir veri bize ulaşmaz.
 
-Oyunda **isteğe bağlı ödüllü reklamlar** vardır. Reklamları Google AdMob
-gösterir ve AdMob kendi verilerini toplar. Aşağıdaki bölüm bunu açıklar.
+Oyunda **isteğe bağlı ödüllü reklamlar** vardır. Reklamları Unity Ads
+gösterir ve Unity Ads kendi verilerini toplar. Aşağıdaki bölüm bunu açıklar.
 
 ## Cihazınızda kalan veriler
 
@@ -25,13 +25,13 @@ gösterir ve AdMob kendi verilerini toplar. Aşağıdaki bölüm bunu açıklar.
 
 Uygulamayı silerseniz bu veriler de silinir.
 
-## Reklamlar (Google AdMob)
+## Reklamlar (Unity Ads)
 
 Oyun sonunda ekstra hak kazanmak isterseniz ödüllü bir reklam
 izleyebilirsiniz. Reklam izlemek **tamamen isteğe bağlıdır**; izlemeden de
 oyuna devam edebilir, yeni oyun başlatabilirsiniz.
 
-Reklamları Google AdMob sunar. AdMob, reklamları gösterebilmek ve ölçebilmek
+Reklamları Unity Ads sunar. Unity Ads, reklamları gösterebilmek ve ölçebilmek
 için şunlara erişebilir:
 
 - **Reklam kimliği (Advertising ID)** — cihazınıza ait, sıfırlanabilir bir
@@ -43,8 +43,8 @@ için şunlara erişebilir:
 Bu verileri biz görmüyoruz, saklamıyoruz ve satmıyoruz. Bunlar doğrudan
 Google'a gider ve Google'ın kendi politikalarına tabidir:
 
-- Google Gizlilik Politikası: https://policies.google.com/privacy
-- Google reklam ortakları: https://policies.google.com/technologies/partner-sites
+- Unity Gizlilik Politikası: https://unity.com/legal/game-player-and-app-user-privacy-policy
+- Google reklam ortakları: https://unity.com/legal/privacy-policy
 
 ### Reklam kişiselleştirmesini kapatma
 
@@ -66,6 +66,7 @@ Uygulamanın istediği izinlerin tamamı reklam SDK'sından gelir:
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Reklamı indirmek ve bağlantıyı kontrol etmek |
 | `AD_ID`, `ACCESS_ADSERVICES_*` | Reklam kimliği ve Android'in reklam ölçüm API'leri |
 | `WAKE_LOCK`, `FOREGROUND_SERVICE` | Reklam videosu oynarken ekranın kapanmaması |
+| `RECEIVE_BOOT_COMPLETED` | Reklam SDK'sının yarım kalan işini cihaz yeniden başladıktan sonra tamamlaması |
 
 Oyunun kendisi hiçbir izin istemez: kameraya, mikrofona, rehbere, konuma ya da
 dosyalarınıza erişmez.
