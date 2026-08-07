@@ -60,3 +60,6 @@ android/build/
 lib/game/merge_board.dart
 test/merge_board_test.dart
 NOTES.md
+
+# Kalite kontrol paketi betigi: gercek Game ID iceriyor.
+tool/build_qa.sh
