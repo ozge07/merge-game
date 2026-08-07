@@ -55,7 +55,7 @@ class Strings {
   String get newRecord => _pick('🏆  YENİ REKOR!', '🏆  NEW RECORD!');
   String get watchingAd => _pick('REKLAM AÇILIYOR…', 'LOADING AD…');
   String get continueSubtitle =>
-      _pick('reklam izle, tahtada yer aç', 'watch an ad, free up space');
+      _pick('tahtada yer aç', 'free up space');
   String get playAgain => _pick('TEKRAR OYNA', 'PLAY AGAIN');
   String get menu => _pick('MENÜ', 'MENU');
 

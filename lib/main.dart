@@ -4,6 +4,7 @@ import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 
 import 'bootstrap.dart';
+import 'game/ad_config.dart';
 import 'game/ads_controller.dart';
 import 'game/audio_controller.dart';
 import 'game/game_save_store.dart';
@@ -22,7 +23,7 @@ Future<void> main() => bootstrap(() async {
   final audio = AudioController();
   final highScores = HighScoreStore();
   final languages = LanguageStore();
-  final ads = AdsController();
+  final ads = AdConfig.buildController();
 
   // Kayıt, rekor ve dil menü çizilmeden hazır olsun; reklam arka planda.
   await Future.wait([
