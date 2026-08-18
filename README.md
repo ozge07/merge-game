@@ -1,4 +1,4 @@
-# Merge Game
+# Sidegrow
 
 Flutter + Flame ile yapılmış birleştirme oyunu. 5x5 tahtada aynı seviyeden
 objeleri birleştirip daha yükseğine çıkıyorsun.

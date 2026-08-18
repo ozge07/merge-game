@@ -1,6 +1,6 @@
 # Play Console — Data Safety formu için cevaplar
 
-Merge Game'in **release** derlemesi incelenerek çıkarıldı. Formu doldururken
+Sidegrow'in **release** derlemesi incelenerek çıkarıldı. Formu doldururken
 bu tabloyu kullan.
 
 ## Özet
@@ -73,7 +73,7 @@ grep -oE 'android:name="[A-Za-z0-9_.]*permission[A-Za-z0-9_.]*"' \
 
 > Not: bu listede `ACCESS_ADSERVICES_AD_ID` **yok** — daha önceki sürümde
 > yanlışlıkla yazılmıştı. `RECEIVE_BOOT_COMPLETED` ise var ama eksikti.
-> İkisi de 17 Ağustos 2026'da manifest yeniden üretilerek düzeltildi.
+> İkisi de 18 Ağustos 2026'da manifest yeniden üretilerek düzeltildi.
 > Dört oyunun izin listesi birebir aynı.
 
 ## Kapalı test (closed testing) — beyan aynı kalıyor

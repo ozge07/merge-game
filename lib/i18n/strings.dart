@@ -26,8 +26,8 @@ class Strings {
       language == AppLanguage.tr ? tr : en;
 
   // --- Menü ---
-  String get titleTop => 'MERGE';
-  String get titleBottom => 'GAME';
+  String get titleTop => 'SIDE';
+  String get titleBottom => 'GROW';
   String get continueGame => _pick('DEVAM ET', 'CONTINUE');
   String get newGame => _pick('YENİ OYUN', 'NEW GAME');
   String get howToPlay => _pick('NASIL OYNANIR', 'HOW TO PLAY');

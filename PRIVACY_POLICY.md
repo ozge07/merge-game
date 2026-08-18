@@ -1,6 +1,6 @@
-# Merge Game — Gizlilik Politikası
+# Sidegrow — Gizlilik Politikası
 
-**Son güncelleme:** 17 Ağustos 2026
+**Son güncelleme:** 18 Ağustos 2026
 **Geliştirici:** Blue Labs Games
 **İletişim:** bluelabsgames@gmail.com
 
@@ -8,7 +8,7 @@ Yayındaki sürümler:
 [Türkçe](https://ozge07.github.io/merge-game/privacy-policy.html) ·
 [English](https://ozge07.github.io/merge-game/privacy-policy-en.html)
 
-Bu politika, **Merge Game** mobil oyununun kullanıcı verilerini nasıl ele
+Bu politika, **Sidegrow** mobil oyununun kullanıcı verilerini nasıl ele
 aldığını açıklar.
 
 ## Kısaca
