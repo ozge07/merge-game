@@ -393,6 +393,22 @@ class BoardComponent extends PositionComponent
   int _dragFromRow = 0;
   int _dragFromCol = 0;
 
+  /*
+   * Boş hücrede başlayan sürükleme.
+   *
+   * Parmakla yapılan dokunuş hiçbir zaman tam olarak yerinde durmuyor; birkaç
+   * piksellik kayma Flame'in olayı `onTapUp` yerine sürükleme olarak
+   * sınıflamasına yetiyor. Boş hücrede sürüklenecek bir obje olmadığı için
+   * eskiden bu durumda hiçbir şey olmuyordu: oyun gerçek telefonda
+   * oynanamıyordu, emulator'de ise `adb input tap` hiç kaymadığı için sorun
+   * görünmüyordu.
+   *
+   * Bu yüzden boş hücrede başlayan sürüklemenin nerede başladığını ve nerede
+   * bittiğini izliyoruz; aynı hücrede bitiyorsa oyuncu oraya koymak istemiştir.
+   */
+  (int, int)? _bosBaslangic;
+  Vector2 _sonNokta = Vector2.zero();
+
   static final Paint _cellPaint = Paint()
     ..color = Colors.white.withValues(alpha: 0.045);
   static final Paint _framePaint = Paint()
@@ -577,6 +593,8 @@ class BoardComponent extends PositionComponent
     }
     final tile = _tiles[_index(cell.$1, cell.$2)];
     if (tile == null) {
+      _bosBaslangic = cell;
+      _sonNokta = event.localPosition.clone();
       return;
     }
     _dragged = tile;
@@ -593,6 +611,9 @@ class BoardComponent extends PositionComponent
   void onDragUpdate(DragUpdateEvent event) {
     super.onDragUpdate(event);
     _dragged?.position += event.localDelta;
+    if (_dragged == null && _bosBaslangic != null) {
+      _sonNokta += event.localDelta;
+    }
   }
 
   @override
@@ -610,6 +631,19 @@ class BoardComponent extends PositionComponent
   void _finishDrag() {
     final tile = _dragged;
     if (tile == null) {
+      final baslangic = _bosBaslangic;
+      _bosBaslangic = null;
+      if (baslangic == null) {
+        return;
+      }
+      // Boş hücrede başlayıp aynı hücrede bittiyse bu bir dokunuştur.
+      // Mesafe eşiği yerine hücre karşılaştırması: eşik ekran yoğunluğuna
+      // göre ayarlanmak zorunda kalırdı, hücre her cihazda aynı anlama
+      // geliyor.
+      final bitis = game.cellAt(_sonNokta);
+      if (bitis != null && bitis.$1 == baslangic.$1 && bitis.$2 == baslangic.$2) {
+        game.tapCell(baslangic.$1, baslangic.$2);
+      }
       return;
     }
     _dragged = null;

@@ -66,7 +66,7 @@ class MergeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sidegrow',
+      title: 'Side Grow',
       debugShowCheckedModeBanner: false,
       // Dil kapsamı Navigator'ın üstünde olmalı: `home:` içine konursa
       // sonradan açılan sayfalar kapsamın dışında kalıyor.

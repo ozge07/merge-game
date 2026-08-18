@@ -1,6 +1,6 @@
 # Play Console — Data Safety formu için cevaplar
 
-Sidegrow'in **release** derlemesi incelenerek çıkarıldı. Formu doldururken
+Side Grow'in **release** derlemesi incelenerek çıkarıldı. Formu doldururken
 bu tabloyu kullan.
 
 ## Özet

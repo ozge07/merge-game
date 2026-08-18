@@ -1,4 +1,4 @@
-# Play Store hazırlığı — Sidegrow
+# Play Store hazırlığı — Side Grow
 
 Bu dosya Play Console'a girilecek bilgileri bir arada tutuyor; her yayında
 formu sıfırdan doldurmamak için.
@@ -8,7 +8,7 @@ formu sıfırdan doldurmamak için.
 | Alan | Değer |
 | --- | --- |
 | Geliştirici adı | Blue Labs Games (dört oyunda da aynı) |
-| Uygulama adı | Sidegrow |
+| Uygulama adı | Side Grow |
 | Paket adı | `com.bluelabsgames.mergegame` (**bir daha değiştirilemez**) |
 | Kategori | Oyun → Bulmaca |
 | İçerik derecelendirmesi | Herkes (şiddet, satın alma, kullanıcı etkileşimi yok) |

@@ -428,6 +428,36 @@ void main() {
     });
   });
 
+  group('parmakla dokunuş', () {
+    testWidgets('birkaç piksel kayan dokunuş boş hücreye taş koyuyor', (
+      tester,
+    ) async {
+      // Gerçek parmak dokunurken hiçbir zaman tam yerinde durmuyor; birkaç
+      // piksellik kayma Flame'in olayı sürükleme saymasına yetiyor. Boş
+      // hücrede sürüklenecek obje olmadığı için oyun gerçek telefonda hiç
+      // oynanamıyordu — emulator'de `adb input tap` hiç kaymadığı için sorun
+      // görünmüyordu.
+      final game = await pumpGame(tester, ekran: const Size(1080, 2400));
+      expect(game.board.levelAt(0, 0), isNull, reason: 'hücre boş başlamalı');
+
+      // Dünya -> ekran: kamera sol üste sabit, ölçek genişlikten geliyor.
+      final merkez = game.centreOf(0, 0);
+      final olcek = 1080 / MergeGame.worldWidth;
+      final nokta = Offset(merkez.x * olcek, merkez.y * olcek);
+
+      await tester.dragFrom(nokta, const Offset(6, 4));
+      await settle(tester);
+
+      expect(
+        game.board.levelAt(0, 0),
+        isNotNull,
+        reason: 'kayan dokunuş da taş yerleştirmeli',
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  });
+
   group('yerleşim', () {
     testWidgets('tablet oranında tahta HUD şeridinin altında kalıyor', (
       tester,
