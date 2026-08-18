@@ -16,7 +16,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Oyunu gerçek `GameWidget` içinde kurar; Flame'in bütün yaşam döngüsü
 /// çalışsın diye birkaç kare çeviriyoruz.
-Future<MergeGame> pumpGame(WidgetTester tester) async {
+/// [ekran] verilirse test yüzeyi o piksel boyutuna ayarlanıyor. Yerleşim
+/// testleri buna muhtaç: varsayılan 800x600 yüzey hiçbir telefona ya da
+/// tablete benzemiyor.
+Future<MergeGame> pumpGame(WidgetTester tester, {Size? ekran}) async {
+  if (ekran != null) {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = ekran;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
   final saves = GameSaveStore();
   final highScores = HighScoreStore();
   final game = MergeGame(
@@ -414,6 +423,48 @@ void main() {
       await settle(tester);
 
       expect(game.world.children.whereType<PopupText>(), isEmpty);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  });
+
+  group('yerleşim', () {
+    testWidgets('tablet oranında tahta HUD şeridinin altında kalıyor', (
+      tester,
+    ) async {
+      // Tablet oranı (1:1.6). Tahta kare ve genişlikten ölçüldüğü için burada
+      // dikeyde oransal olarak daha çok yer kaplıyor; sadece ortalanırsa üst
+      // çerçevesi "sıradaki" taşının içinden geçiyor.
+      final game = await pumpGame(tester, ekran: const Size(1200, 1920));
+
+      // Alt sınır tam bu oranda devreye giriyor; kayan nokta payı bırakıyoruz.
+      expect(
+        game.boardOrigin.y,
+        greaterThanOrEqualTo(game.worldHeight * MergeGame.minTopFraction - 0.01),
+        reason: 'tahta HUD şeridine tırmanıyor',
+      );
+      // Sınır gerçekten çalışsın: ortalama tek başına daha yukarı koyardı.
+      expect(
+        (game.worldHeight - game.boardSide) * 0.54,
+        lessThan(game.worldHeight * MergeGame.minTopFraction),
+      );
+      expect(
+        game.boardOrigin.y + game.boardSide,
+        lessThanOrEqualTo(game.worldHeight),
+        reason: 'tahta ekranın altından taşıyor',
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('telefon oranında tahta ortalanmış kalıyor', (tester) async {
+      // Telefonda yükseklik bol; alt sınır devreye girmemeli, ortalama
+      // korunmalı.
+      final game = await pumpGame(tester, ekran: const Size(1080, 2400));
+
+      final ortalanmis = (game.worldHeight - game.boardSide) * 0.54;
+      expect(game.boardOrigin.y, closeTo(ortalanmis, 0.01));
+      expect(ortalanmis, greaterThan(game.worldHeight * MergeGame.minTopFraction));
 
       await tester.pumpWidget(const SizedBox.shrink());
     });

@@ -47,6 +47,15 @@ class MergeGame extends FlameGame {
   static const double _margin = 18;
   static const double _gap = 10;
 
+  /// Tahtanın üstünde HUD'a bırakılan en az boşluk, dünya yüksekliğinin oranı.
+  ///
+  /// HUD (skor kartları + sıradaki obje satırı) dp cinsinden sabit yükseklikte
+  /// ve ekran yüksekliği de dp'yle ölçeklendiği için, kapladığı yer her cihazda
+  /// dünya yüksekliğinin ~%22-23'ü oluyor: telefonda 250/1111, 7 inç tablette
+  /// 178/800. Bu yüzden sınır oran olarak yazılıyor, sabit birim olarak değil.
+  @visibleForTesting
+  static const double minTopFraction = 0.26;
+
   final MergeBoard board;
   final GameSaveStore saves;
   final HighScoreStore highScores;
@@ -93,7 +102,17 @@ class MergeGame extends FlameGame {
 
   /// Tahtanın sol üst köşesi. Dikeyde ortadan biraz aşağıda: üstte skor,
   /// altta sıradaki obje için yer kalsın.
-  Vector2 get boardOrigin => Vector2(_margin, (worldHeight - boardSide) * 0.54);
+  ///
+  /// Ortalama tek başına yetmiyor: tahta kare ve genişlikten ölçüldüğü için
+  /// ekran kısaldıkça (telefon 1:2.22 -> tablet 1:1.6) dikeyde oransal olarak
+  /// daha çok yer kaplıyor ve yukarı tırmanıyor. 7 inç tablette tahtanın üst
+  /// çerçevesi "sıradaki" taşının içinden geçiyordu. [minTopFraction] bu
+  /// tırmanmayı durduruyor; telefonda ortalama zaten daha aşağıda olduğu için
+  /// hiçbir şey değişmiyor.
+  Vector2 get boardOrigin => Vector2(
+    _margin,
+    max((worldHeight - boardSide) * 0.54, worldHeight * minTopFraction),
+  );
 
   @override
   Color backgroundColor() => const Color(0xFF12161F);
